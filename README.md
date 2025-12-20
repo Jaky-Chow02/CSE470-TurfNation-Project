@@ -51,3 +51,13 @@ TurfNation is a management system designed to help sports venues, mini-stadiums,
 - Morgan for HTTP request logging
 - CORS for cross-origin resource sharing
 
+## Project Structure
+
+```
+CSE470-Turfnation-Project/
+├── backend/
+│   ├── config/
+│   │   └── database.js
+│   ├── controllers/
+│   │   ├── authController.js
+│   │   ├── bookingController.js
