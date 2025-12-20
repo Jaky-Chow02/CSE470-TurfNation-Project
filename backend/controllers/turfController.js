@@ -69,9 +69,7 @@ exports.getAllTurfs = async (req, res, next) => {
   }
 };
 
-// @desc    Get single turf
-// @route   GET /api/turfs/:id
-// @access  Public
+
 exports.getTurf = async (req, res, next) => {
   try {
     const turf = await Turf.findById(req.params.id).populate('owner', 'name email phone');
