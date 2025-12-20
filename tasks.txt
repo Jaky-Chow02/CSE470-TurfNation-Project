@@ -1,0 +1,28 @@
+## Sprint Backlog and tasks 
+Sprint Leader Tasks (Jaky Ahmed Chowdhury)
+-- Planned sprint backlog and delegated tasks
+-- Designed system architecture (MERN + controllers + DB)
+-- Set up backend (Express, JWT, routes)
+-- Built User, Turf, Booking models
+-- Implemented search + availability 
+-- Documentation
+
+Developer 1 Tasks (Azharul Habib)
+-- Implemented Booking Page UI
+   (search, filter, date picker)
+-- Connected frontend with backend APIs
+-- Built User Dashboard
+-- Created QR code display screen
+
+Developer 2 Tasks (Mohammad Shadmaan Saquib)
+-- Built Booking Controller (create, cancel, reschedule)
+-- Developed slot management logic (markBooked, checkOverlap)
+-- Added mock payment handling
+-- Generated booking QR codes
+
+Developer 3 Tasks (Faria Mahamud Prity)
+-- Weather, Rewards & Tournament Modules
+-- Implemented WeatherInfo model + controller
+-- Rewards & Tournaments
+-- Built Rewards module (hours, badges, goals)
+-- Created Rewards UI components
