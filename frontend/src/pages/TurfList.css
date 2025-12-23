@@ -1,0 +1,123 @@
+.turf-list-page {
+  padding: 20px;
+}
+
+.turf-list-page h1 {
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.search-form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.btn-search, .btn-reset {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.btn-search {
+  background-color: #1976d2;
+  color: white;
+}
+
+.btn-search:hover {
+  background-color: #1565c0;
+}
+
+.btn-reset {
+  background-color: #757575;
+  color: white;
+}
+
+.btn-reset:hover {
+  background-color: #616161;
+}
+
+.turf-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.turf-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.turf-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.turf-card h3 {
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.turf-location {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.turf-price {
+  color: #1976d2;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.turf-sports {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.sport-tag {
+  background-color: #e3f2fd;
+  color: #1976d2;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.turf-condition {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 15px;
+}
+
+.btn-book {
+  width: 100%;
+  padding: 12px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.btn-book:hover {
+  background-color: #45a049;
+}
