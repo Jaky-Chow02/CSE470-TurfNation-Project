@@ -59,3 +59,14 @@
 .nav-btn:hover {
   background-color: #f5f5f5;
 }
+
+/* Admin Dashboard Link Styling */
+.nav-link.admin-dashboard {
+  background-color: #4caf50;  /* Green background for admin dashboard */
+  color: white;
+  font-weight: bold;
+}
+
+.nav-link.admin-dashboard:hover {
+  background-color: #388e3c;  /* Darker green on hover */
+}

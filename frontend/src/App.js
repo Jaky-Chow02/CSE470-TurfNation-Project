@@ -1,5 +1,5 @@
 import React from 'react';
-
+import AdminDashboard from './components/AdminDashboard';  // Adjust the import path
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import OwnerDashboard from './pages/OwnerDashboard';
@@ -16,7 +16,8 @@ import MyBookings from './pages/MyBookings';
 import './App.css';
 
 function App() {
-  const isAuthenticated = localStorage.getItem('token');
+  const isAuthenticated = localStorage.getItem('token'); // Check if user is authenticated
+  const userRole = localStorage.getItem('role');  // Assuming role is stored in localStorage
 
   return (
     <Router>
@@ -50,7 +51,11 @@ function App() {
               path="/owner-dashboard" 
               element={isAuthenticated ? <OwnerDashboard /> : <Navigate to="/login" />} 
             />
-            
+            {/* Admin Dashboard route with role check */}
+            <Route 
+              path="/admin-dashboard" 
+              element={isAuthenticated && userRole === 'admin' ? <AdminDashboard /> : <Navigate to="/login" />} 
+            />
           </Routes>
         </div>
       </div>
