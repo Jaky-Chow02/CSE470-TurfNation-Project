@@ -5,7 +5,7 @@ A web-based turf booking and management platform built using the MERN stack.
 ## Team Members - Group 7, Section 8
 
 - Azharul Habib (22241009)
-- Jaky Ahmed Chowdhury (22201616) - Sprint Leader
+- Jaky Ahmed Chowdhury (22201616) - Sprint Leader for sprint 2
 - Mohammad Shadmaan Saquib (22299323)
 - Faria Mahamud Prity (22299486)
 
