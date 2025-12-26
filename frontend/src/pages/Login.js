@@ -1,3 +1,4 @@
+// src/pages/Login.js
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { login } from '../services/api';
@@ -20,9 +21,13 @@ function Login() {
 
     try {
       const response = await login(formData);
-      localStorage.setItem('token', response.data.data.token);
-      localStorage.setItem('userName', response.data.data.user.name);
-      localStorage.setItem('userRole', response.data.data.user.role);
+      const { token, user } = response.data.data;
+
+      localStorage.setItem('token', token);
+      localStorage.setItem('userName', user.name);
+      localStorage.setItem('userRole', user.role);  // ← Critical: saves the role
+      localStorage.setItem('userEmail', user.email); // Optional: for profile
+
       navigate('/turfs');
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Please try again.');
