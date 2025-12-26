@@ -17,9 +17,6 @@ function Navbar() {
     navigate('/login');
   };
 
-  const isOwner = userRole === 'turf_owner';
-  const isAdmin = userRole === 'admin';
-
   return (
     <nav className="navbar">
       <div className="nav-container">
@@ -31,19 +28,27 @@ function Navbar() {
           <Link to="/turfs" className="nav-link">Turfs</Link>
           <Link to="/tournaments" className="nav-link">Tournaments</Link>
 
-          {token && isOwner && (
+          {/* Role-Based Dashboard Link - Only ONE shows */}
+          {token && userRole === 'turf_owner' && (
             <Link to="/owner-dashboard" className="nav-link">Owner Dashboard</Link>
           )}
 
-          {token && isAdmin && (
+          {token && userRole === 'admin' && (
             <Link to="/admin-dashboard" className="nav-link">Admin Dashboard</Link>
+          )}
+
+          {token && userRole !== 'turf_owner' && userRole !== 'admin' && (
+            <Link to="/dashboard" className="nav-link">Dashboard</Link>
           )}
 
           {token ? (
             <>
-              <Link to="/dashboard" className="nav-link">Dashboard</Link>
               <Link to="/my-bookings" className="nav-link">My Bookings</Link>
-              <Link to="/profile" className="nav-link">Hello, {userName}</Link>
+
+              <Link to="/profile" className="nav-link">
+                Hello, {userName}
+              </Link>
+
               <button onClick={handleLogout} className="nav-btn">Logout</button>
             </>
           ) : (

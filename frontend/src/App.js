@@ -1,5 +1,5 @@
 // src/App.js
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Dashboard from './pages/Dashboard';
@@ -19,12 +19,32 @@ import AdminDashboard from './components/AdminDashboard';
 import './App.css';
 
 function App() {
-  const token = localStorage.getItem('token');
-  const userRole = localStorage.getItem('userRole') || '';  // ← Fixed: use 'userRole'
+  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [userRole, setUserRole] = useState(localStorage.getItem('userRole') || '');
+
+  // Re-check localStorage when it changes (after login/register)
+  useEffect(() => {
+    const checkAuth = () => {
+      setToken(localStorage.getItem('token'));
+      setUserRole(localStorage.getItem('userRole') || '');
+    };
+
+    // Check on mount
+    checkAuth();
+
+    // Listen for changes (e.g., login in another tab)
+    window.addEventListener('storage', checkAuth);
+
+    return () => window.removeEventListener('storage', checkAuth);
+  }, []);
 
   const ProtectedRoute = ({ children, adminOnly = false }) => {
-    if (!token) return <Navigate to="/login" />;
-    if (adminOnly && userRole !== 'admin') return <Navigate to="/dashboard" />;
+    if (!token) {
+      return <Navigate to="/login" replace />;
+    }
+    if (adminOnly && userRole !== 'admin') {
+      return <Navigate to="/dashboard" replace />;
+    }
     return children;
   };
 

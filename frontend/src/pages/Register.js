@@ -1,3 +1,4 @@
+// src/pages/Register.js
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { register } from '../services/api';
@@ -8,7 +9,8 @@ function Register() {
     name: '',
     email: '',
     password: '',
-    phone: ''
+    phone: '',
+    role: 'user'  // Default to user
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,10 +26,12 @@ function Register() {
     setLoading(true);
 
     try {
-      const response = await register(formData);
+      const response = await register(formData);  // Sends role to backend
       localStorage.setItem('token', response.data.data.token);
       localStorage.setItem('userName', response.data.data.user.name);
       localStorage.setItem('userRole', response.data.data.user.role);
+      localStorage.setItem('userEmail', response.data.data.user.email);
+
       navigate('/turfs');
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
@@ -44,6 +48,21 @@ function Register() {
         {error && <div className="error-message">{error}</div>}
         
         <form onSubmit={handleSubmit}>
+          {/* Role Selection */}
+          <div className="form-group">
+            <label>I want to register as</label>
+            <select
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              required
+              className="role-select"
+            >
+              <option value="user">Regular User (Book turfs & play)</option>
+              <option value="turf_owner">Turf Owner (Manage my turf)</option>
+            </select>
+          </div>
+
           <div className="form-group">
             <label>Name</label>
             <input
@@ -82,7 +101,7 @@ function Register() {
           </div>
 
           <div className="form-group">
-            <label>Phone</label>
+            <label>Phone (Optional)</label>
             <input
               type="tel"
               name="phone"
