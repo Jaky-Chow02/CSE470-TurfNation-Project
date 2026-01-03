@@ -60,7 +60,7 @@ app.use('/api/bookings', require('./routes/bookingRoutes'));
 app.use('/api/tournaments', require('./routes/tournamentRoutes'));
 app.use('/api/weather', require('./routes/weatherRoutes'));
 app.use('/api/rewards', require('./routes/rewardsRoutes'));
-
+app.use('/api/admin', require('./routes/adminRoutes'));
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({

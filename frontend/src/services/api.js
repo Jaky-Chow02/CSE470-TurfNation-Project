@@ -50,5 +50,5 @@ export const getTurfBookings = (turfId, params) => api.get(`/bookings/turf/${tur
 export const addAnnouncement = (turfId, message) => api.post(`/turfs/${turfId}/announcement`, { message });
 
 export const getMyRewards = () => api.get('/rewards/me');
-
+export const getAdminStats = () => api.get('/admin/stats');
 export default api;

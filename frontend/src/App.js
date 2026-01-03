@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Navbar from './components/Navbar';
 import Dashboard from './pages/Dashboard';
 import OwnerDashboard from './pages/OwnerDashboard';
+import AdminDashboard from './pages/AdminDashboard';
 import Tournaments from './pages/Tournaments';
 import TournamentDetails from './pages/TournamentDetails';
 import CreateTournament from './pages/CreateTournament';
@@ -14,7 +15,7 @@ import BookingPage from './pages/BookingPage';
 import MyBookings from './pages/MyBookings';
 import UserProfile from './pages/UserProfile';
 import ChangePassword from './pages/ChangePassword';
-import AdminDashboard from './components/AdminDashboard';
+
 
 import './App.css';
 
