@@ -1,0 +1,87 @@
+.notification-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  /* Matching the height of your other nav links */
+  height: 100%; 
+  padding: 0 10px;
+}
+
+.bell-wrapper {
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.bell-wrapper:hover {
+  transform: scale(1.1);
+}
+
+.bell-icon-styled {
+  font-size: 20px;
+  /* Filter makes the emoji look more like a white/silver icon to fit the theme */
+  filter: brightness(0) invert(1); 
+}
+
+.notification-badge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background-color: #ff5252; /* Brighter red to pop against blue */
+  color: white;
+  border-radius: 50%;
+  min-width: 16px;
+  height: 16px;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  border: 1.5px solid #1976d2; /* Blend with your navbar blue */
+}
+
+/* Dropdown styling */
+.notification-dropdown {
+  position: absolute;
+  top: 45px;
+  right: -10px; /* Aligns dropdown nicely under the icon */
+  width: 260px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  z-index: 1001;
+  overflow: hidden;
+}
+
+.dropdown-header {
+  padding: 10px 15px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dropdown-header h3 {
+  margin: 0;
+  font-size: 14px;
+  color: #333;
+}
+
+.notification-item {
+  padding: 12px 15px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.notification-item.unread {
+  background-color: #f0f7ff;
+}
+
+.notification-item p {
+  margin: 0;
+  font-size: 13px;
+  color: #555;
+}

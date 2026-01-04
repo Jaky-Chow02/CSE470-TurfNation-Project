@@ -70,3 +70,50 @@
 .nav-link.admin-dashboard:hover {
   background-color: #388e3c;  /* Darker green on hover */
 }
+
+
+.navbar {
+  background-color: #1976d2;
+  padding: 10px 0; /* Slightly reduced padding for a sleeker look */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: sticky; /* Keeps navbar at the top */
+  top: 0;
+  z-index: 1000;
+}
+
+.nav-container {
+  max-width: 1300px; /* Increased slightly for better spacing */
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Reduced gap between main links */
+}
+
+/* Grouping Bell, Profile, and Logout */
+.nav-user-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-left: 15px;
+  padding-left: 15px;
+  border-left: 1px solid rgba(255, 255, 255, 0.2); /* Visual divider */
+}
+
+.nav-profile {
+  font-weight: 500;
+  padding: 8px 10px !important;
+}
+
+/* Ensure the notification bell doesn't have extra padding that breaks alignment */
+.notification-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

@@ -1,6 +1,7 @@
 // src/components/Navbar.js
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import NotificationBell from './NotificationBell';
 import './Navbar.css';
 
 function Navbar() {
@@ -25,10 +26,11 @@ function Navbar() {
         </Link>
 
         <div className="nav-menu">
+          {/* General Navigation */}
           <Link to="/turfs" className="nav-link">Turfs</Link>
           <Link to="/tournaments" className="nav-link">Tournaments</Link>
 
-          {/* Role-Based Dashboard Link - Only ONE shows */}
+          {/* Role-Based Dashboards */}
           {token && userRole === 'turf_owner' && (
             <Link to="/owner-dashboard" className="nav-link">Owner Dashboard</Link>
           )}
@@ -45,11 +47,16 @@ function Navbar() {
             <>
               <Link to="/my-bookings" className="nav-link">My Bookings</Link>
 
-              <Link to="/profile" className="nav-link">
-                Hello, {userName}
-              </Link>
+              {/* User Action Group: Bell + Hello + Logout */}
+              <div className="nav-user-section">
+                <NotificationBell />
+                
+                <Link to="/profile" className="nav-link nav-profile">
+                  Hello, {userName}
+                </Link>
 
-              <button onClick={handleLogout} className="nav-btn">Logout</button>
+                <button onClick={handleLogout} className="nav-btn">Logout</button>
+              </div>
             </>
           ) : (
             <>
