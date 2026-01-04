@@ -4,6 +4,7 @@ const User = require('../models/User');
 const Rewards = require('../models/Rewards');
 const { generateQRCode, checkTimeOverlap, calculateDuration, calculatePrice, isPastDate } = require('../utils/helpers');
 const { getWeather } = require('../utils/weatherService');
+const { createNotification } = require('./notificationController');
 
 // @desc    Create new booking
 // @route   POST /api/bookings
@@ -107,6 +108,8 @@ exports.createBooking = async (req, res, next) => {
     };
     booking.qrCode = await generateQRCode(qrData);
     await booking.save();
+
+    await createNotification(req.user._id, `Your booking for ${turfDetails.name} is confirmed!`, 'booking');
 
     // Update user statistics
     await User.findByIdAndUpdate(req.user._id, {
