@@ -28,7 +28,7 @@ const seedDatabase = async () => {
       {
         name: 'John Doe',
         email: 'john@example.com',
-        password,
+        password: 'password123',
         phone: '01712345678',
         role: 'user',
         statistics: { totalBookings: 8, hoursPlayed: 20, favoriteSport: 'Football' }
