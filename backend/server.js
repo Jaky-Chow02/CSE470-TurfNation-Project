@@ -4,6 +4,7 @@ const cors = require('cors');
 const morgan = require('morgan');
 const connectDB = require('./config/database');
 const errorHandler = require('./middleware/errorHandler');
+const userRoutes = require('./routes/userRoutes');
 
 // Load environment variables
 dotenv.config();
@@ -59,9 +60,10 @@ app.use('/api/turfs', require('./routes/turfRoutes'));
 app.use('/api/bookings', require('./routes/bookingRoutes'));
 app.use('/api/tournaments', require('./routes/tournamentRoutes'));
 app.use('/api/weather', require('./routes/weatherRoutes'));
-app.use('/api/rewards', require('./routes/rewardsRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
+app.use('/api/users', userRoutes);
+app.use('/api/rewards', require('./routes/rewardsRoutes'));
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({
