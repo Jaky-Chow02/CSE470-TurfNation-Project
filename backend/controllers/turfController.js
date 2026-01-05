@@ -1,5 +1,6 @@
 const Turf = require('../models/Turf');
 const Booking = require('../models/Booking');
+const { createNotification } = require('./notificationController');
 
 // @desc    Create new turf
 // @route   POST /api/turfs
@@ -216,39 +217,30 @@ exports.getTurfAvailability = async (req, res, next) => {
 exports.addAnnouncement = async (req, res, next) => {
   try {
     const { message } = req.body;
-
     const turf = await Turf.findById(req.params.id);
 
-    if (!turf) {
-      return res.status(404).json({
-        success: false,
-        message: 'Turf not found'
-      });
-    }
+    if (!turf) return res.status(404).json({ success: false, message: 'Turf not found' });
 
-    // Check ownership
     if (turf.owner.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized'
-      });
+      return res.status(403).json({ success: false, message: 'Not authorized' });
     }
 
-    turf.announcements.unshift({
-      message,
-      createdAt: new Date()
-    });
-
+    turf.announcements.unshift({ message, createdAt: new Date() });
     await turf.save();
 
-    res.status(200).json({
-      success: true,
-      message: 'Announcement added successfully',
-      data: turf.announcements[0]
+    // NEW: Notify users who have booked this turf in the past or future
+    const recentBookings = await Booking.find({ turf: turf._id }).distinct('user');
+
+    recentBookings.forEach(userId => {
+      createNotification(
+        userId, 
+        `New announcement from ${turf.name}: "${message}"`, 
+        'info'
+      );
     });
-  } catch (error) {
-    next(error);
-  }
+
+    res.status(200).json({ success: true, message: 'Announcement added and notifications sent', data: turf.announcements[0] });
+  } catch (error) { next(error); }
 };
 
 // @desc    Update turf condition
@@ -257,33 +249,27 @@ exports.addAnnouncement = async (req, res, next) => {
 exports.updateCondition = async (req, res, next) => {
   try {
     const { condition } = req.body;
-
     const turf = await Turf.findById(req.params.id);
 
-    if (!turf) {
-      return res.status(404).json({
-        success: false,
-        message: 'Turf not found'
-      });
-    }
+    if (!turf) return res.status(404).json({ success: false, message: 'Turf not found' });
 
-    // Check ownership
     if (turf.owner.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized'
-      });
+      return res.status(403).json({ success: false, message: 'Not authorized' });
     }
 
     turf.condition = condition;
     await turf.save();
 
-    res.status(200).json({
-      success: true,
-      message: 'Turf condition updated successfully',
-      data: { condition: turf.condition }
+    // NEW: Notify users about the turf condition change
+    const recentBookings = await Booking.find({ turf: turf._id }).distinct('user');
+    recentBookings.forEach(userId => {
+      createNotification(
+        userId, 
+        `The condition of ${turf.name} has been updated to: ${condition}`, 
+        'info'
+      );
     });
-  } catch (error) {
-    next(error);
-  }
+
+    res.status(200).json({ success: true, message: 'Condition updated and notifications sent', data: { condition: turf.condition } });
+  } catch (error) { next(error); }
 };

@@ -76,7 +76,7 @@ function BookingPage() {
         <div className="turf-info">
           <h2>{turf.name}</h2>
           <p>{turf.location.address}, {turf.location.city}</p>
-          <p className="price">₹{turf.pricePerHour} per hour</p>
+          <p className="price">৳{turf.pricePerHour} per hour</p>
           <p>Condition: {turf.condition}</p>
         </div>
 
