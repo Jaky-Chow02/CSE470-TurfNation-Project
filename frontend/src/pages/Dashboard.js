@@ -61,20 +61,23 @@ function Dashboard() {
           <h2>Achievements</h2>
           <div className="achievement-stats">
             <div className="stat-item">
-              <span className="stat-value">{rewards.achievements.totalBookings || 0}</span>
+              {/* Change rewards.achievements to rewards.statistics */}
+              <span className="stat-value">{rewards.statistics?.totalBookings || 0}</span>
               <span className="stat-label">Total Bookings</span>
             </div>
             <div className="stat-item">
-              <span className="stat-value">{rewards.achievements.totalHoursPlayed || 0}</span>
+              <span className="stat-value">{rewards.statistics?.hoursPlayed || 0}</span>
               <span className="stat-label">Hours Played</span>
             </div>
             <div className="stat-item">
-              <span className="stat-value">{rewards.achievements.uniqueSportsPlayed || 0}</span>
+              {/* We can use the length of the sportsStats array we sent from backend */}
+              <span className="stat-value">{rewards.sportsStats?.length || 0}</span>
               <span className="stat-label">Sports Played</span>
             </div>
             <div className="stat-item">
-              <span className="stat-value">{rewards.achievements.tournamentsParticipated || 0}</span>
-              <span className="stat-label">Tournaments</span>
+              {/* Use the user's achievements array length */}
+              <span className="stat-value">{rewards.achievements?.length || 0}</span>
+              <span className="stat-label">Badges</span>
             </div>
           </div>
         </div>

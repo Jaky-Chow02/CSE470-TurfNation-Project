@@ -1,5 +1,6 @@
 const Tournament = require('../models/Tournament');
 const Turf = require('../models/Turf');
+const { createNotification } = require('./notificationController');
 
 // @desc    Create tournament
 // @route   POST /api/tournaments
@@ -132,6 +133,13 @@ exports.joinTournament = async (req, res, next) => {
 
     await tournament.save();
 
+    // NOTIFICATION: Notify the captain they successfully joined
+    await createNotification(
+      req.user._id,
+      `Successfully joined tournament: ${tournament.name} with team "${teamName}".`,
+      'tournament'
+    );
+
     res.status(200).json({
       success: true,
       message: 'Successfully joined tournament',
@@ -163,10 +171,27 @@ exports.updateTournament = async (req, res, next) => {
       });
     }
 
+    // Check if critical details changed to customize the message
+    const dateChanged = req.body.startDate && req.body.startDate !== tournament.startDate?.toISOString();
+
     tournament = await Tournament.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true
     });
+
+    // NOTIFICATION: Alert all registered participants about the update
+    if (tournament.participants && tournament.participants.length > 0) {
+      const updateMessage = dateChanged 
+        ? `Urgent: The schedule for tournament "${tournament.name}" has changed. Please check the new timings.`
+        : `Information for the tournament "${tournament.name}" has been updated by the organizer.`;
+
+      // Loop through all team captains and create notifications
+      const notificationPromises = tournament.participants.map(p => 
+        createNotification(p.team.captain, updateMessage, 'tournament')
+      );
+      
+      await Promise.all(notificationPromises);
+    }
 
     res.status(200).json({
       success: true,

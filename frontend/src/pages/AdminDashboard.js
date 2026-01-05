@@ -112,7 +112,7 @@ function AdminDashboard() {
                   <td>
                     <span className="sport-badge">{booking.sport}</span>
                   </td>
-                  <td className="amount">₹{booking.payment.amount}</td>
+                  <td className="amount">৳{booking.payment.amount}</td>
                   <td>
                     <span className={`status-badge ${booking.status}`}>
                       {booking.status}

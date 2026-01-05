@@ -139,7 +139,7 @@ function TournamentDetails() {
               {tournament.entryFee > 0 && (
                 <div className="detail-item">
                   <span className="detail-label">Entry Fee:</span>
-                  <span className="detail-value">₹{tournament.entryFee}</span>
+                  <span className="detail-value">৳{tournament.entryFee}</span>
                 </div>
               )}
             </div>

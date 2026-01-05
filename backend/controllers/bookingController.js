@@ -13,7 +13,6 @@ exports.createBooking = async (req, res, next) => {
   try {
     const { turf, date, startTime, endTime, sport, notes } = req.body;
 
-    // Validate required fields
     if (!turf || !date || !startTime || !endTime || !sport) {
       return res.status(400).json({
         success: false,
@@ -21,7 +20,6 @@ exports.createBooking = async (req, res, next) => {
       });
     }
 
-    // Check if date is in the past
     if (isPastDate(date)) {
       return res.status(400).json({
         success: false,
@@ -29,7 +27,6 @@ exports.createBooking = async (req, res, next) => {
       });
     }
 
-    // Get turf details
     const turfDetails = await Turf.findById(turf);
     if (!turfDetails) {
       return res.status(404).json({
@@ -38,7 +35,6 @@ exports.createBooking = async (req, res, next) => {
       });
     }
 
-    // Check if sport is available
     if (!turfDetails.sports.includes(sport)) {
       return res.status(400).json({
         success: false,
@@ -46,7 +42,6 @@ exports.createBooking = async (req, res, next) => {
       });
     }
 
-    // Check for overlapping bookings
     const existingBookings = await Booking.find({
       turf,
       date: new Date(date),
@@ -64,14 +59,10 @@ exports.createBooking = async (req, res, next) => {
       });
     }
 
-    // Calculate duration and price
     const duration = calculateDuration(startTime, endTime);
     const amount = calculatePrice(turfDetails.pricePerHour, duration);
-
-    // Get weather data for the booking
     const weatherData = await getWeather(turfDetails.location.city, new Date(date));
 
-    // Create booking
     const booking = await Booking.create({
       user: req.user._id,
       turf,
@@ -83,7 +74,7 @@ exports.createBooking = async (req, res, next) => {
       payment: {
         amount,
         method: 'card',
-        status: 'completed', // Mock payment - instant success
+        status: 'completed',
         transactionId: `TXN-${Date.now()}`,
         paidAt: new Date()
       },
@@ -98,7 +89,6 @@ exports.createBooking = async (req, res, next) => {
       status: 'confirmed'
     });
 
-    // Generate QR code
     const qrData = {
       bookingId: booking._id,
       turfName: turfDetails.name,
@@ -109,99 +99,37 @@ exports.createBooking = async (req, res, next) => {
     booking.qrCode = await generateQRCode(qrData);
     await booking.save();
 
-    await createNotification(req.user._id, `Your booking for ${turfDetails.name} is confirmed!`, 'booking');
+    // NOTIFICATIONS
+    // 1. To User
+    await createNotification(
+      req.user._id, 
+      `Booking Confirmed! Your slot at ${turfDetails.name} is ready for ${new Date(date).toLocaleDateString()}.`, 
+      'booking'
+    );
+    // 2. To Turf Owner
+    await createNotification(
+      turfDetails.owner, 
+      `New Booking Alert: ${req.user.name} has booked your turf for ${new Date(date).toLocaleDateString()} at ${startTime}.`, 
+      'booking'
+    );
 
-    // Update user statistics
     await User.findByIdAndUpdate(req.user._id, {
       $inc: { 'statistics.totalBookings': 1, 'statistics.hoursPlayed': duration }
     });
 
-    // Update rewards
     const rewards = await Rewards.findOne({ user: req.user._id });
     if (rewards) {
-      rewards.addPoints(duration * 10); // 10 points per hour
+      rewards.addPoints(duration * 10);
       rewards.achievements.totalBookings += 1;
       rewards.achievements.totalHoursPlayed += duration;
       await rewards.save();
     }
 
-    // Populate turf details
     await booking.populate('turf', 'name location pricePerHour');
 
     res.status(201).json({
       success: true,
       message: 'Booking created successfully',
-      data: booking
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// @desc    Get all bookings for logged in user
-// @route   GET /api/bookings/my-bookings
-// @access  Private
-exports.getMyBookings = async (req, res, next) => {
-  try {
-    const { status, page = 1, limit = 10 } = req.query;
-
-    let query = { user: req.user._id };
-    
-    if (status) {
-      query.status = status;
-    }
-
-    const skip = (page - 1) * limit;
-    const total = await Booking.countDocuments(query);
-
-    const bookings = await Booking.find(query)
-      .populate('turf', 'name location sports pricePerHour')
-      .sort({ date: -1, startTime: -1 })
-      .limit(parseInt(limit))
-      .skip(skip);
-
-    res.status(200).json({
-      success: true,
-      count: bookings.length,
-      total,
-      page: parseInt(page),
-      pages: Math.ceil(total / limit),
-      data: bookings
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// @desc    Get single booking
-// @route   GET /api/bookings/:id
-// @access  Private
-exports.getBooking = async (req, res, next) => {
-  try {
-    const booking = await Booking.findById(req.params.id)
-      .populate('turf', 'name location sports pricePerHour')
-      .populate('user', 'name email phone');
-
-    if (!booking) {
-      return res.status(404).json({
-        success: false,
-        message: 'Booking not found'
-      });
-    }
-
-    // Check if user owns this booking or is turf owner
-    const turf = await Turf.findById(booking.turf._id);
-    if (booking.user._id.toString() !== req.user._id.toString() && 
-        turf.owner.toString() !== req.user._id.toString() &&
-        req.user.role !== 'admin') {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to view this booking'
-      });
-    }
-
-    res.status(200).json({
-      success: true,
       data: booking
     });
   } catch (error) {
@@ -215,40 +143,20 @@ exports.getBooking = async (req, res, next) => {
 exports.cancelBooking = async (req, res, next) => {
   try {
     const { reason } = req.body;
-
-    const booking = await Booking.findById(req.params.id);
+    const booking = await Booking.findById(req.params.id).populate('turf', 'name owner');
 
     if (!booking) {
-      return res.status(404).json({
-        success: false,
-        message: 'Booking not found'
-      });
+      return res.status(404).json({ success: false, message: 'Booking not found' });
     }
 
-    // Check ownership
     if (booking.user.toString() !== req.user._id.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to cancel this booking'
-      });
+      return res.status(403).json({ success: false, message: 'Not authorized' });
     }
 
-    // Check if already cancelled or completed
     if (booking.status === 'cancelled') {
-      return res.status(400).json({
-        success: false,
-        message: 'Booking is already cancelled'
-      });
+      return res.status(400).json({ success: false, message: 'Already cancelled' });
     }
 
-    if (booking.status === 'completed') {
-      return res.status(400).json({
-        success: false,
-        message: 'Cannot cancel completed booking'
-      });
-    }
-
-    // Update booking
     booking.status = 'cancelled';
     booking.cancelledBy = req.user._id;
     booking.cancellationReason = reason;
@@ -256,7 +164,20 @@ exports.cancelBooking = async (req, res, next) => {
     booking.payment.status = 'refunded';
     await booking.save();
 
-    // Update user statistics
+    // NOTIFICATIONS
+    // 1. To User (Confirmation)
+    await createNotification(
+      req.user._id, 
+      `Your booking for ${booking.turf.name} has been successfully cancelled.`, 
+      'booking'
+    );
+    // 2. To Turf Owner (Alert)
+    await createNotification(
+      booking.turf.owner, 
+      `Booking Cancelled: The slot for ${new Date(booking.date).toLocaleDateString()} at ${booking.turf.name} is now available again.`, 
+      'booking'
+    );
+
     await User.findByIdAndUpdate(req.user._id, {
       $inc: { 'statistics.totalBookings': -1, 'statistics.hoursPlayed': -booking.duration }
     });
@@ -277,36 +198,23 @@ exports.cancelBooking = async (req, res, next) => {
 exports.rescheduleBooking = async (req, res, next) => {
   try {
     const { date, startTime, endTime } = req.body;
-
-    const booking = await Booking.findById(req.params.id);
+    const booking = await Booking.findById(req.params.id).populate('turf', 'name owner location');
 
     if (!booking) {
-      return res.status(404).json({
-        success: false,
-        message: 'Booking not found'
-      });
+      return res.status(404).json({ success: false, message: 'Booking not found' });
     }
 
-    // Check ownership
     if (booking.user.toString() !== req.user._id.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to reschedule this booking'
-      });
+      return res.status(403).json({ success: false, message: 'Not authorized' });
     }
 
-    // Check if date is in the past
     if (isPastDate(date)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Cannot reschedule to past dates'
-      });
+      return res.status(400).json({ success: false, message: 'Cannot reschedule to past dates' });
     }
 
-    // Check for overlapping bookings (excluding current booking)
     const existingBookings = await Booking.find({
       _id: { $ne: booking._id },
-      turf: booking.turf,
+      turf: booking.turf._id,
       date: new Date(date),
       status: { $in: ['pending', 'confirmed'] }
     });
@@ -316,29 +224,22 @@ exports.rescheduleBooking = async (req, res, next) => {
     );
 
     if (hasOverlap) {
-      return res.status(400).json({
-        success: false,
-        message: 'This time slot is already booked'
-      });
+      return res.status(400).json({ success: false, message: 'This time slot is already booked' });
     }
 
-    // Store old booking details
     booking.rescheduledFrom = {
       date: booking.date,
       startTime: booking.startTime,
       endTime: booking.endTime
     };
 
-    // Update booking
     booking.date = new Date(date);
     booking.startTime = startTime;
     booking.endTime = endTime;
     booking.duration = calculateDuration(startTime, endTime);
     booking.status = 'rescheduled';
 
-    // Update weather info
-    const turf = await Turf.findById(booking.turf);
-    const weatherData = await getWeather(turf.location.city, new Date(date));
+    const weatherData = await getWeather(booking.turf.location.city, new Date(date));
     booking.weather = {
       condition: weatherData.condition,
       temperature: weatherData.temperature,
@@ -349,57 +250,22 @@ exports.rescheduleBooking = async (req, res, next) => {
 
     await booking.save();
 
+    // NOTIFICATIONS
+    await createNotification(
+      req.user._id, 
+      `Booking Rescheduled: Your visit to ${booking.turf.name} is now set for ${new Date(date).toLocaleDateString()} at ${startTime}.`, 
+      'booking'
+    );
+    await createNotification(
+      booking.turf.owner, 
+      `Reschedule Alert: A booking for ${booking.turf.name} has been moved to ${new Date(date).toLocaleDateString()}.`, 
+      'booking'
+    );
+
     res.status(200).json({
       success: true,
       message: 'Booking rescheduled successfully',
       data: booking
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// @desc    Get bookings for turf owner
-// @route   GET /api/bookings/turf/:turfId
-// @access  Private (Turf Owner)
-exports.getTurfBookings = async (req, res, next) => {
-  try {
-    const turf = await Turf.findById(req.params.turfId);
-
-    if (!turf) {
-      return res.status(404).json({
-        success: false,
-        message: 'Turf not found'
-      });
-    }
-
-    // Check ownership
-    if (turf.owner.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized'
-      });
-    }
-
-    const { date, status } = req.query;
-    let query = { turf: req.params.turfId };
-
-    if (date) {
-      query.date = new Date(date);
-    }
-
-    if (status) {
-      query.status = status;
-    }
-
-    const bookings = await Booking.find(query)
-      .populate('user', 'name email phone')
-      .sort({ date: 1, startTime: 1 });
-
-    res.status(200).json({
-      success: true,
-      count: bookings.length,
-      data: bookings
     });
   } catch (error) {
     next(error);

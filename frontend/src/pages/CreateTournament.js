@@ -260,7 +260,7 @@ function CreateTournament() {
           <h2>Prize Pool & Entry Fee</h2>
           
           <div className="form-group">
-            <label>Entry Fee (₹)</label>
+            <label>Entry Fee (৳)</label>
             <input
               type="number"
               name="entryFee"
@@ -273,7 +273,7 @@ function CreateTournament() {
 
           <div className="form-row">
             <div className="form-group">
-              <label>1st Prize (₹)</label>
+              <label>1st Prize (৳)</label>
               <input
                 type="number"
                 name="prizeFirst"
@@ -284,7 +284,7 @@ function CreateTournament() {
             </div>
 
             <div className="form-group">
-              <label>2nd Prize (₹)</label>
+              <label>2nd Prize (৳)</label>
               <input
                 type="number"
                 name="prizeSecond"
@@ -295,7 +295,7 @@ function CreateTournament() {
             </div>
 
             <div className="form-group">
-              <label>3rd Prize (₹)</label>
+              <label>3rd Prize (৳)</label>
               <input
                 type="number"
                 name="prizeThird"

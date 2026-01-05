@@ -49,6 +49,7 @@ export const getMyTurfs = () => api.get('/turfs?owner=me');
 export const getTurfBookings = (turfId, params) => api.get(`/bookings/turf/${turfId}`, { params });
 export const addAnnouncement = (turfId, message) => api.post(`/turfs/${turfId}/announcement`, { message });
 
-export const getMyRewards = () => api.get('/rewards/me');
+//export const getMyRewards = () => api.get('/rewards/me');
+export const getMyRewards = () => api.get('/users/dashboard-stats');
 export const getAdminStats = () => api.get('/admin/stats');
 export default api;

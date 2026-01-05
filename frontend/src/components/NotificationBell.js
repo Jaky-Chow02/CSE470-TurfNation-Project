@@ -7,15 +7,21 @@ function NotificationBell() {
   const [notifications, setNotifications] = useState([]);
   const token = localStorage.getItem('token');
 
+  // URL setup - using localhost as per your current configuration
+  const API_URL = 'http://localhost:5000/api/notifications';
+
   const fetchNotifications = async () => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
+      const currentToken = localStorage.getItem('token');
+      if (!currentToken) return;
 
-      const res = await axios.get('http://localhost:5000/api/notifications', {
-        headers: { Authorization: `Bearer ${token}` }
+      const res = await axios.get(API_URL, {
+        headers: { Authorization: `Bearer ${currentToken}` }
       });
-      setNotifications(Array.isArray(res.data) ? res.data : res.data.data || []);
+      
+      // Standardizing data format regardless of backend structure
+      const data = Array.isArray(res.data) ? res.data : res.data.data || [];
+      setNotifications(data);
     } catch (err) {
       console.error("Notification fetch failed:", err);
     }
@@ -24,25 +30,26 @@ function NotificationBell() {
   useEffect(() => {
     if (token) {
       fetchNotifications();
+      // Polling every 30 seconds to simulate real-time updates
       const interval = setInterval(fetchNotifications, 30000);
       return () => clearInterval(interval);
     }
   }, [token]);
 
-  // NEW: Function to open dropdown and clear the badge count
   const toggleDropdown = async () => {
     const nextState = !isOpen;
     setIsOpen(nextState);
 
-    // If opening the menu and there are unread items, clear them in DB
     const unreadCount = notifications.filter(n => !n.isRead).length;
+    
+    // When the user opens the bell, mark all as read automatically
     if (nextState && unreadCount > 0) {
       try {
-        await axios.put('http://localhost:5000/api/notifications/mark-all-read', {}, {
+        await axios.put(`${API_URL}/mark-all-read`, {}, {
           headers: { Authorization: `Bearer ${token}` }
         });
         
-        // Update local state so badge disappears immediately without a refresh
+        // Optimistic UI update: make badge disappear instantly
         setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
       } catch (err) {
         console.error("Error marking all as read:", err);
@@ -52,12 +59,12 @@ function NotificationBell() {
 
   const handleMarkAsRead = async (id) => {
     try {
-      await axios.put(`http://localhost:5000/api/notifications/${id}/read`, {}, {
+      await axios.put(`${API_URL}/${id}/read`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotifications(notifications.map(n => n._id === id ? { ...n, isRead: true } : n));
     } catch (err) {
-      console.error("Error marking as read:", err);
+      console.error("Error marking single notification as read:", err);
     }
   };
 
@@ -65,34 +72,48 @@ function NotificationBell() {
 
   return (
     <div className="notification-container">
-      {/* Changed onClick to use the new toggleDropdown function */}
       <div className="bell-wrapper" onClick={toggleDropdown}>
-        <span className="bell-icon-styled">🔔</span>
-        {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
+        <span className="bell-icon-styled" role="img" aria-label="notifications">🔔</span>
+        {unreadCount > 0 && (
+          <span className="notification-badge">{unreadCount}</span>
+        )}
       </div>
 
       {isOpen && (
         <div className="notification-dropdown">
           <div className="dropdown-header">
-            <h3>Notifications ({unreadCount})</h3>
-            <button onClick={() => setIsOpen(false)}>Close</button>
+            <h3>Notifications</h3>
+            <button className="close-btn" onClick={() => setIsOpen(false)}>&times;</button>
           </div>
+          
           <div className="notification-list">
             {notifications.length === 0 ? (
-              <p className="no-notif">No new notifications</p>
+              <div className="no-notif">
+                <p>All caught up! 🎉</p>
+              </div>
             ) : (
               notifications.map(n => (
                 <div 
                   key={n._id} 
-                  className={`notification-item ${n.isRead ? '' : 'unread'}`}
+                  className={`notification-item ${n.isRead ? 'read' : 'unread'}`}
                   onClick={() => handleMarkAsRead(n._id)}
                 >
-                  <p>{n.message}</p>
-                  <small>{new Date(n.createdAt).toLocaleString()}</small>
+                  <div className="notif-content">
+                    <p className="notif-message">{n.message}</p>
+                    <small className="notif-time">
+                      {new Date(n.createdAt).toLocaleDateString()} at {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </small>
+                  </div>
+                  {!n.isRead && <span className="unread-dot"></span>}
                 </div>
               ))
             )}
           </div>
+          {notifications.length > 0 && (
+            <div className="dropdown-footer">
+              <small>Showing recent updates</small>
+            </div>
+          )}
         </div>
       )}
     </div>

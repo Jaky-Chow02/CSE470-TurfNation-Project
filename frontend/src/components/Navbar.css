@@ -117,3 +117,11 @@
   align-items: center;
   justify-content: center;
 }
+
+.notification-dropdown {
+  position: absolute;
+  top: 100%; /* Positions it exactly below the navbar */
+  right: 0;
+  margin-top: 10px;
+  /* ... other styles ... */
+}

@@ -159,7 +159,7 @@ function OwnerDashboard() {
           <div className="stat-icon">💰</div>
           <div className="stat-content">
             <h3>Revenue</h3>
-            <p className="stat-value">₹{calculateRevenue()}</p>
+            <p className="stat-value">৳{calculateRevenue()}</p>
           </div>
         </div>
       </div>
