@@ -41,6 +41,9 @@ const bookingSchema = new mongoose.Schema({
       type: Number,
       required: true
     },
+    amountPaid: {
+    type: Number
+    },
     method: {
       type: String,
       enum: ['card', 'mobile_banking', 'cash'],

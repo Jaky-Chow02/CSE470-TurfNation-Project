@@ -60,6 +60,7 @@ app.use('/api/bookings', require('./routes/bookingRoutes'));
 app.use('/api/tournaments', require('./routes/tournamentRoutes'));
 app.use('/api/weather', require('./routes/weatherRoutes'));
 app.use('/api/rewards', require('./routes/rewardsRoutes'));
+app.use('/api/payment', require('./routes/paymentRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 // 404 handler
