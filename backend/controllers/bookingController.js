@@ -6,6 +6,81 @@ const { generateQRCode, checkTimeOverlap, calculateDuration, calculatePrice, isP
 const { getWeather } = require('../utils/weatherService');
 const { createNotification } = require('./notificationController');
 
+// @desc    Get logged in user's bookings
+// @route   GET /api/bookings/my-bookings
+// @access  Private
+exports.getMyBookings = async (req, res, next) => {
+  try {
+    const bookings = await Booking.find({ user: req.user._id })
+      .populate('turf', 'name location images')
+      .sort({ date: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: bookings.length,
+      data: bookings
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get bookings for a specific turf (For Owners)
+// @route   GET /api/bookings/turf/:turfId
+// @access  Private (Owner/Admin)
+exports.getTurfBookings = async (req, res, next) => {
+  try {
+    const turf = await Turf.findById(req.params.turfId);
+
+    if (!turf) {
+      return res.status(404).json({ success: false, message: 'Turf not found' });
+    }
+
+    // Security check: Only owner or admin
+    if (turf.owner.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+
+    const bookings = await Booking.find({ turf: req.params.turfId })
+      .populate('user', 'name email phone')
+      .sort({ date: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: bookings.length,
+      data: bookings
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get single booking
+// @route   GET /api/bookings/:id
+// @access  Private
+exports.getBooking = async (req, res, next) => {
+  try {
+    const booking = await Booking.findById(req.params.id)
+      .populate('turf', 'name location owner')
+      .populate('user', 'name email');
+
+    if (!booking) {
+      return res.status(404).json({ success: false, message: 'Booking not found' });
+    }
+
+    // Check ownership
+    if (booking.user._id.toString() !== req.user._id.toString() && 
+        booking.turf.owner.toString() !== req.user._id.toString() && 
+        req.user.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+
+    res.status(200).json({ success: true, data: booking });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Create new booking
 // @route   POST /api/bookings
 // @access  Private
@@ -14,32 +89,20 @@ exports.createBooking = async (req, res, next) => {
     const { turf, date, startTime, endTime, sport, notes } = req.body;
 
     if (!turf || !date || !startTime || !endTime || !sport) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please provide all required fields'
-      });
+      return res.status(400).json({ success: false, message: 'Please provide all required fields' });
     }
 
     if (isPastDate(date)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Cannot book for past dates'
-      });
+      return res.status(400).json({ success: false, message: 'Cannot book for past dates' });
     }
 
     const turfDetails = await Turf.findById(turf);
     if (!turfDetails) {
-      return res.status(404).json({
-        success: false,
-        message: 'Turf not found'
-      });
+      return res.status(404).json({ success: false, message: 'Turf not found' });
     }
 
     if (!turfDetails.sports.includes(sport)) {
-      return res.status(400).json({
-        success: false,
-        message: 'This sport is not available at this turf'
-      });
+      return res.status(400).json({ success: false, message: 'This sport is not available at this turf' });
     }
 
     const existingBookings = await Booking.find({
@@ -53,10 +116,7 @@ exports.createBooking = async (req, res, next) => {
     );
 
     if (hasOverlap) {
-      return res.status(400).json({
-        success: false,
-        message: 'This time slot is already booked'
-      });
+      return res.status(400).json({ success: false, message: 'This time slot is already booked' });
     }
 
     const duration = calculateDuration(startTime, endTime);
@@ -100,18 +160,8 @@ exports.createBooking = async (req, res, next) => {
     await booking.save();
 
     // NOTIFICATIONS
-    // 1. To User
-    await createNotification(
-      req.user._id, 
-      `Booking Confirmed! Your slot at ${turfDetails.name} is ready for ${new Date(date).toLocaleDateString()}.`, 
-      'booking'
-    );
-    // 2. To Turf Owner
-    await createNotification(
-      turfDetails.owner, 
-      `New Booking Alert: ${req.user.name} has booked your turf for ${new Date(date).toLocaleDateString()} at ${startTime}.`, 
-      'booking'
-    );
+    await createNotification(req.user._id, `Booking Confirmed! Your slot at ${turfDetails.name} is ready for ${new Date(date).toLocaleDateString()}.`, 'booking');
+    await createNotification(turfDetails.owner, `New Booking Alert: ${req.user.name} has booked your turf for ${new Date(date).toLocaleDateString()} at ${startTime}.`, 'booking');
 
     await User.findByIdAndUpdate(req.user._id, {
       $inc: { 'statistics.totalBookings': 1, 'statistics.hoursPlayed': duration }
@@ -127,11 +177,7 @@ exports.createBooking = async (req, res, next) => {
 
     await booking.populate('turf', 'name location pricePerHour');
 
-    res.status(201).json({
-      success: true,
-      message: 'Booking created successfully',
-      data: booking
-    });
+    res.status(201).json({ success: true, message: 'Booking created successfully', data: booking });
   } catch (error) {
     next(error);
   }
@@ -165,28 +211,14 @@ exports.cancelBooking = async (req, res, next) => {
     await booking.save();
 
     // NOTIFICATIONS
-    // 1. To User (Confirmation)
-    await createNotification(
-      req.user._id, 
-      `Your booking for ${booking.turf.name} has been successfully cancelled.`, 
-      'booking'
-    );
-    // 2. To Turf Owner (Alert)
-    await createNotification(
-      booking.turf.owner, 
-      `Booking Cancelled: The slot for ${new Date(booking.date).toLocaleDateString()} at ${booking.turf.name} is now available again.`, 
-      'booking'
-    );
+    await createNotification(req.user._id, `Your booking for ${booking.turf.name} has been successfully cancelled.`, 'booking');
+    await createNotification(booking.turf.owner, `Booking Cancelled: The slot for ${new Date(booking.date).toLocaleDateString()} at ${booking.turf.name} is now available again.`, 'booking');
 
     await User.findByIdAndUpdate(req.user._id, {
       $inc: { 'statistics.totalBookings': -1, 'statistics.hoursPlayed': -booking.duration }
     });
 
-    res.status(200).json({
-      success: true,
-      message: 'Booking cancelled successfully',
-      data: booking
-    });
+    res.status(200).json({ success: true, message: 'Booking cancelled successfully', data: booking });
   } catch (error) {
     next(error);
   }
@@ -251,22 +283,10 @@ exports.rescheduleBooking = async (req, res, next) => {
     await booking.save();
 
     // NOTIFICATIONS
-    await createNotification(
-      req.user._id, 
-      `Booking Rescheduled: Your visit to ${booking.turf.name} is now set for ${new Date(date).toLocaleDateString()} at ${startTime}.`, 
-      'booking'
-    );
-    await createNotification(
-      booking.turf.owner, 
-      `Reschedule Alert: A booking for ${booking.turf.name} has been moved to ${new Date(date).toLocaleDateString()}.`, 
-      'booking'
-    );
+    await createNotification(req.user._id, `Booking Rescheduled: Your visit to ${booking.turf.name} is now set for ${new Date(date).toLocaleDateString()} at ${startTime}.`, 'booking');
+    await createNotification(booking.turf.owner, `Reschedule Alert: A booking for ${booking.turf.name} has been moved to ${new Date(date).toLocaleDateString()}.`, 'booking');
 
-    res.status(200).json({
-      success: true,
-      message: 'Booking rescheduled successfully',
-      data: booking
-    });
+    res.status(200).json({ success: true, message: 'Booking rescheduled successfully', data: booking });
   } catch (error) {
     next(error);
   }
