@@ -23,7 +23,6 @@ function AdminDashboard() {
         headers: { Authorization: `Bearer ${token}` }
       };
 
-      // We call both the stats and the turfs list simultaneously
       const [statsRes, turfsRes] = await Promise.all([
         getAdminStats(),
         axios.get('http://localhost:5000/api/turfs', config)
@@ -32,11 +31,10 @@ function AdminDashboard() {
       setStats(statsRes.data.data);
       
       // Filter for turfs that specifically have isApproved: false
-      // Note: Because of our backend update, the admin will now receive ALL turfs here
       const pending = turfsRes.data.data.filter(turf => turf.isApproved === false);
       setPendingTurfs(pending);
       
-      setError(''); // Clear any previous errors
+      setError('');
     } catch (err) {
       console.error("Dashboard Fetch Error:", err);
       setError('Failed to load dashboard data. Please ensure you are logged in as admin.');
@@ -46,19 +44,24 @@ function AdminDashboard() {
   };
 
   const handleApprove = async (id) => {
+    // Basic ID validation
+    if (!id || id.length !== 24) {
+      toast.error("Invalid Turf ID format");
+      return;
+    }
+
     try {
       const token = localStorage.getItem('token');
       const config = { 
         headers: { Authorization: `Bearer ${token}` } 
       };
       
-      // Using backticks to ensure the ID is correctly injected into the URL
       const res = await axios.put(`http://localhost:5000/api/turfs/${id}/approve`, {}, config);
       
       if (res.data.success) {
         toast.success('Turf approved successfully!');
-        setViewingTurf(null); // Close the modal
-        await fetchData(); // Refresh the list and stats
+        setViewingTurf(null);
+        await fetchData(); 
       }
     } catch (err) {
       console.error("Approve Error:", err);
@@ -67,6 +70,12 @@ function AdminDashboard() {
   };
 
   const handleReject = async (id) => {
+    // 1. Check if ID exists and is exactly 24 characters (standard MongoDB ObjectId length)
+    if (!id || id.length !== 24) {
+      toast.error("Invalid Turf ID format. Rejection aborted.");
+      return;
+    }
+
     if (window.confirm("Are you sure you want to reject this turf? This will delete the request permanently.")) {
       try {
         const token = localStorage.getItem('token');
@@ -74,12 +83,13 @@ function AdminDashboard() {
           headers: { Authorization: `Bearer ${token}` } 
         };
         
+        // Use backticks to ensure the variable is interpolated correctly
         const res = await axios.delete(`http://localhost:5000/api/turfs/${id}`, config);
         
         if (res.data.success) {
           toast.info('Turf request rejected and removed.');
-          setViewingTurf(null); // Close the modal
-          await fetchData(); // Refresh data
+          setViewingTurf(null);
+          await fetchData();
         }
       } catch (err) {
         console.error("Reject Error:", err);
@@ -103,7 +113,6 @@ function AdminDashboard() {
         <p>System overview and statistics</p>
       </div>
 
-      {/* Metric Cards */}
       <div className="metrics-grid">
         <div className="metric-card users">
           <div className="metric-icon">👥</div>
@@ -135,7 +144,6 @@ function AdminDashboard() {
         </div>
       </div>
 
-      {/* Pending Approvals Section */}
       <div className="recent-bookings-section mb-5">
         <div className="section-header-flex">
           <h2 className="section-title">Pending Turf Approvals</h2>
@@ -179,7 +187,6 @@ function AdminDashboard() {
         )}
       </div>
 
-      {/* --- MODAL BLOCK --- */}
       {viewingTurf && (
         <div className="admin-modal-overlay" onClick={() => setViewingTurf(null)}>
           <div className="admin-modal-card" onClick={(e) => e.stopPropagation()}>

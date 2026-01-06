@@ -93,7 +93,7 @@ const turfSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Index for location-based searches
+
 turfSchema.index({ 'location.city': 1, sports: 1 });
 
-module.exports = mongoose.model('Turf', turfSchema);
+module.exports = mongoose.model('Turf', turfSchema, 'turves');
