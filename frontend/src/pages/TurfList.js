@@ -72,7 +72,7 @@ function TurfList() {
               <p className="turf-location">
                 {turf.location.address}, {turf.location.city}
               </p>
-              <p className="turf-price">₹{turf.pricePerHour}/hour</p>
+              <p className="turf-price">৳{turf.pricePerHour}/hour</p>
               <div className="turf-sports">
                 {turf.sports.map((sport, idx) => (
                   <span key={idx} className="sport-tag">{sport}</span>

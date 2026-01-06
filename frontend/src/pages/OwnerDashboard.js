@@ -227,7 +227,7 @@ function OwnerDashboard() {
                     </td>
                     <td>{booking.sport}</td>
                     <td>{booking.duration}h</td>
-                    <td>₹{booking.payment.amount}</td>
+                    <td>৳{booking.payment.amount}</td>
                     <td>
                       <span className={`status-badge ${booking.status}`}>
                         {booking.status}

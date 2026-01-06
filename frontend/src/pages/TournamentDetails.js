@@ -169,14 +169,14 @@ function TournamentDetails() {
                   <span className="prize-medal">🥇</span>
                   <div className="prize-details">
                     <span className="prize-position">1st Place</span>
-                    <span className="prize-amount">₹{tournament.prizePool.first}</span>
+                    <span className="prize-amount">৳{tournament.prizePool.first}</span>
                   </div>
                 </div>
                 <div className="prize-item second">
                   <span className="prize-medal">🥈</span>
                   <div className="prize-details">
                     <span className="prize-position">2nd Place</span>
-                    <span className="prize-amount">₹{tournament.prizePool.second}</span>
+                    <span className="prize-amount">৳{tournament.prizePool.second}</span>
                   </div>
                 </div>
                 {tournament.prizePool.third && (
@@ -184,7 +184,7 @@ function TournamentDetails() {
                     <span className="prize-medal">🥉</span>
                     <div className="prize-details">
                       <span className="prize-position">3rd Place</span>
-                      <span className="prize-amount">₹{tournament.prizePool.third}</span>
+                      <span className="prize-amount">৳{tournament.prizePool.third}</span>
                     </div>
                   </div>
                 )}

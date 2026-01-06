@@ -153,7 +153,7 @@ function Tournaments() {
                   {tournament.entryFee > 0 && (
                     <div className="info-item">
                       <span className="info-icon">💰</span>
-                      <span>Entry: ₹{tournament.entryFee}</span>
+                      <span>Entry: ৳{tournament.entryFee}</span>
                     </div>
                   )}
                 </div>
@@ -163,10 +163,10 @@ function Tournaments() {
                   <div className="prize-pool">
                     <h4>Prize Pool</h4>
                     <div className="prizes">
-                      <span className="prize">🥇 ₹{tournament.prizePool.first}</span>
-                      <span className="prize">🥈 ₹{tournament.prizePool.second}</span>
+                      <span className="prize">🥇 ৳{tournament.prizePool.first}</span>
+                      <span className="prize">🥈 ৳{tournament.prizePool.second}</span>
                       {tournament.prizePool.third && (
-                        <span className="prize">🥉 ₹{tournament.prizePool.third}</span>
+                        <span className="prize">🥉 ৳{tournament.prizePool.third}</span>
                       )}
                     </div>
                   </div>

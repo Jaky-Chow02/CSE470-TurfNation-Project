@@ -57,7 +57,7 @@ function AdminDashboard() {
           <div className="metric-icon">💰</div>
           <div className="metric-content">
             <h3>Total Revenue</h3>
-            <p className="metric-value">₹{stats.totalRevenue.toLocaleString()}</p>
+            <p className="metric-value">৳{stats.totalRevenue.toLocaleString()}</p>
             <span className="metric-label">Total earnings</span>
           </div>
         </div>

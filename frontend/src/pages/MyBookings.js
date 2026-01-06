@@ -58,7 +58,7 @@ function MyBookings() {
                 <p><strong>Time:</strong> {booking.startTime} - {booking.endTime}</p>
                 <p><strong>Sport:</strong> {booking.sport}</p>
                 <p><strong>Duration:</strong> {booking.duration} hours</p>
-                <p><strong>Amount:</strong> ₹{booking.payment.amount}</p>
+                <p><strong>Amount:</strong> ৳{booking.payment.amount}</p>
                 
                 {booking.weather && (
                   <div className="weather-small">
