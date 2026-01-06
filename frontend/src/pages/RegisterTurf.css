@@ -1,0 +1,106 @@
+/* Inherited from UserProfile.css */
+.profile-page {
+  padding: 40px 20px;
+  min-height: calc(100vh - 80px);
+  background-color: #f9f9f9;
+}
+
+.profile-container {
+  max-width: 650px; /* Slightly wider for the grid */
+  margin: 0 auto;
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.profile-container h1 {
+  text-align: center;
+  color: #1976d2;
+  margin-bottom: 5px;
+  font-size: 32px;
+}
+
+.subtitle {
+  text-align: center;
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+}
+
+.form-group input, .custom-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  font-family: inherit;
+}
+
+/* Layout helpers for two-column inputs */
+.form-group-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.section-divider {
+  margin: 20px 0;
+  border-top: 1px solid #eee;
+}
+
+/* Checkbox specific styling */
+.section-label {
+  display: block;
+  font-weight: 600;
+  color: #1976d2;
+  margin-bottom: 12px;
+}
+
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #555;
+  cursor: pointer;
+}
+
+.checkbox-item input {
+  width: auto;
+}
+
+.btn-primary {
+  background-color: #1976d2;
+  color: white;
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.btn-primary:hover {
+  background-color: #1565c0;
+}

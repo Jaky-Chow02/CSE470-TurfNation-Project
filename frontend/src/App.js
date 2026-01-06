@@ -15,14 +15,21 @@ import BookingPage from './pages/BookingPage';
 import MyBookings from './pages/MyBookings';
 import UserProfile from './pages/UserProfile';
 import ChangePassword from './pages/ChangePassword';
+import RegisterTurf from './pages/RegisterTurf';
 
 
 import './App.css';
 
 function App() {
+  // Inside your App function...
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [userRole, setUserRole] = useState(localStorage.getItem('userRole') || '');
 
+// Create a function to refresh state
+const handleLoginSuccess = () => {
+  setToken(localStorage.getItem('token'));
+  setUserRole(localStorage.getItem('userRole'));
+};
   // Re-check localStorage when it changes (after login/register)
   useEffect(() => {
     const checkAuth = () => {
@@ -56,7 +63,7 @@ function App() {
         <div className="container">
           <Routes>
             <Route path="/" element={<Navigate to="/turfs" />} />
-            <Route path="/login" element={<Login />} />
+            <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
             <Route path="/register" element={<Register />} />
             <Route path="/turfs" element={<TurfList />} />
             <Route path="/book/:turfId" element={<ProtectedRoute><BookingPage /></ProtectedRoute>} />
@@ -68,6 +75,7 @@ function App() {
             <Route path="/owner-dashboard" element={<ProtectedRoute><OwnerDashboard /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
             <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
+            <Route path="/register-turf" element={<RegisterTurf />} />
             <Route 
               path="/admin-dashboard" 
               element={<ProtectedRoute adminOnly={true}><AdminDashboard /></ProtectedRoute>} 

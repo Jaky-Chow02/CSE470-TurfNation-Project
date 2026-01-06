@@ -4,7 +4,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { login } from '../services/api';
 import './Auth.css';
 
-function Login() {
+// 1. Add { onLoginSuccess } as a prop
+function Login({ onLoginSuccess }) {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -25,10 +26,23 @@ function Login() {
 
       localStorage.setItem('token', token);
       localStorage.setItem('userName', user.name);
-      localStorage.setItem('userRole', user.role);  // ← Critical: saves the role
-      localStorage.setItem('userEmail', user.email); // Optional: for profile
+      localStorage.setItem('userRole', user.role); 
+      localStorage.setItem('userEmail', user.email);
 
-      navigate('/turfs');
+      // 2. Trigger the refresh in App.js before navigating
+      if (onLoginSuccess) {
+        onLoginSuccess();
+      }
+
+      // 3. Conditional Navigation: Admins should go straight to the Admin Dashboard
+      if (user.role === 'admin') {
+        navigate('/admin-dashboard');
+      } else if (user.role === 'turf_owner') {
+        navigate('/owner-dashboard');
+      } else {
+        navigate('/turfs');
+      }
+      
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Please try again.');
     } finally {

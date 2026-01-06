@@ -2,19 +2,23 @@ const Turf = require('../models/Turf');
 const Booking = require('../models/Booking');
 const { createNotification } = require('./notificationController');
 
-// @desc    Create new turf
+// @desc    Create new turf (Request)
 // @route   POST /api/turfs
 // @access  Private (Turf Owner)
 exports.createTurf = async (req, res, next) => {
   try {
     // Add owner to request body
     req.body.owner = req.user._id;
+    
+    // Set default status for new requests
+    req.body.isApproved = false;
+    req.body.isActive = false;
 
     const turf = await Turf.create(req.body);
 
     res.status(201).json({
       success: true,
-      message: 'Turf created successfully',
+      message: 'Turf registration request submitted successfully',
       data: turf
     });
   } catch (error) {
@@ -22,15 +26,23 @@ exports.createTurf = async (req, res, next) => {
   }
 };
 
-// @desc    Get all turfs
+// @desc    Get all turfs (Public list + Admin view)
 // @route   GET /api/turfs
-// @access  Public
+// @access  Public (Optional Auth for Admin view)
 exports.getAllTurfs = async (req, res, next) => {
   try {
     const { city, sport, search, page = 1, limit = 10 } = req.query;
 
-    // Build query
-    let query = { isActive: true };
+    // Build base query
+    let query = {};
+
+    // LOGIC: If the user is NOT an admin (or not logged in), 
+    // they ONLY see active and approved turfs.
+    // If the user IS an admin, the query stays empty {}, showing EVERYTHING.
+    if (!req.user || req.user.role !== 'admin') {
+      query.isActive = true;
+      query.isApproved = true;
+    }
 
     if (city) {
       query['location.city'] = { $regex: city, $options: 'i' };
@@ -47,7 +59,6 @@ exports.getAllTurfs = async (req, res, next) => {
       ];
     }
 
-    // Pagination
     const skip = (page - 1) * limit;
     const total = await Turf.countDocuments(query);
 
@@ -70,7 +81,62 @@ exports.getAllTurfs = async (req, res, next) => {
   }
 };
 
+// @desc    Get turfs belonging to the logged in owner
+// @route   GET /api/turfs/my-turfs
+// @access  Private (Owner)
+exports.getOwnerTurfs = async (req, res, next) => {
+  try {
+    const turfs = await Turf.find({ owner: req.user._id }).sort({ createdAt: -1 });
+    
+    res.status(200).json({
+      success: true,
+      count: turfs.length,
+      data: turfs
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
+// @desc    Approve a turf request
+// @route   PUT /api/turfs/:id/approve
+// @access  Private (Admin only)
+exports.approveTurf = async (req, res, next) => {
+  try {
+    const turf = await Turf.findById(req.params.id);
+
+    if (!turf) {
+      return res.status(404).json({ success: false, message: 'Turf not found' });
+    }
+
+    turf.isApproved = true;
+    turf.isActive = true;
+    await turf.save();
+
+    // Notify the owner
+    try {
+      await createNotification(
+        turf.owner,
+        `Great news! Your turf "${turf.name}" has been approved and is now live for bookings.`,
+        'info'
+      );
+    } catch (notifErr) {
+      console.error("Notification failed but turf was approved:", notifErr);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Turf approved successfully',
+      data: turf
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get single turf
+// @route   GET /api/turfs/:id
+// @access  Public
 exports.getTurf = async (req, res, next) => {
   try {
     const turf = await Turf.findById(req.params.id).populate('owner', 'name email phone');
@@ -93,7 +159,7 @@ exports.getTurf = async (req, res, next) => {
 
 // @desc    Update turf
 // @route   PUT /api/turfs/:id
-// @access  Private (Turf Owner)
+// @access  Private (Turf Owner/Admin)
 exports.updateTurf = async (req, res, next) => {
   try {
     let turf = await Turf.findById(req.params.id);
@@ -128,35 +194,27 @@ exports.updateTurf = async (req, res, next) => {
   }
 };
 
-// @desc    Delete turf
+// @desc    Delete/Reject turf
 // @route   DELETE /api/turfs/:id
-// @access  Private (Turf Owner)
+// @access  Private (Turf Owner/Admin)
 exports.deleteTurf = async (req, res, next) => {
   try {
     const turf = await Turf.findById(req.params.id);
 
     if (!turf) {
-      return res.status(404).json({
-        success: false,
-        message: 'Turf not found'
-      });
+      return res.status(404).json({ success: false, message: 'Turf not found' });
     }
 
-    // Check ownership
+    // Check ownership/role
     if (turf.owner.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to delete this turf'
-      });
+      return res.status(403).json({ success: false, message: 'Not authorized' });
     }
 
-    // Soft delete - mark as inactive
-    turf.isActive = false;
-    await turf.save();
+    await Turf.findByIdAndDelete(req.params.id);
 
     res.status(200).json({
       success: true,
-      message: 'Turf deleted successfully'
+      message: 'Turf removed successfully'
     });
   } catch (error) {
     next(error);
@@ -171,22 +229,15 @@ exports.getTurfAvailability = async (req, res, next) => {
     const { date } = req.query;
 
     if (!date) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please provide a date'
-      });
+      return res.status(400).json({ success: false, message: 'Please provide a date' });
     }
 
     const turf = await Turf.findById(req.params.id);
 
     if (!turf) {
-      return res.status(404).json({
-        success: false,
-        message: 'Turf not found'
-      });
+      return res.status(404).json({ success: false, message: 'Turf not found' });
     }
 
-    // Get all bookings for this turf on the given date
     const bookings = await Booking.find({
       turf: req.params.id,
       date: new Date(date),
@@ -196,11 +247,7 @@ exports.getTurfAvailability = async (req, res, next) => {
     res.status(200).json({
       success: true,
       data: {
-        turf: {
-          id: turf._id,
-          name: turf.name,
-          pricePerHour: turf.pricePerHour
-        },
+        turf: { id: turf._id, name: turf.name, pricePerHour: turf.pricePerHour },
         date,
         bookedSlots: bookings,
         availability: turf.availability
@@ -213,7 +260,7 @@ exports.getTurfAvailability = async (req, res, next) => {
 
 // @desc    Add announcement
 // @route   POST /api/turfs/:id/announcement
-// @access  Private (Turf Owner)
+// @access  Private (Turf Owner/Admin)
 exports.addAnnouncement = async (req, res, next) => {
   try {
     const { message } = req.body;
@@ -228,24 +275,13 @@ exports.addAnnouncement = async (req, res, next) => {
     turf.announcements.unshift({ message, createdAt: new Date() });
     await turf.save();
 
-    // NEW: Notify users who have booked this turf in the past or future
-    const recentBookings = await Booking.find({ turf: turf._id }).distinct('user');
-
-    recentBookings.forEach(userId => {
-      createNotification(
-        userId, 
-        `New announcement from ${turf.name}: "${message}"`, 
-        'info'
-      );
-    });
-
-    res.status(200).json({ success: true, message: 'Announcement added and notifications sent', data: turf.announcements[0] });
+    res.status(200).json({ success: true, message: 'Announcement added', data: turf.announcements[0] });
   } catch (error) { next(error); }
 };
 
 // @desc    Update turf condition
 // @route   PUT /api/turfs/:id/condition
-// @access  Private (Turf Owner)
+// @access  Private (Turf Owner/Admin)
 exports.updateCondition = async (req, res, next) => {
   try {
     const { condition } = req.body;
@@ -260,16 +296,6 @@ exports.updateCondition = async (req, res, next) => {
     turf.condition = condition;
     await turf.save();
 
-    // NEW: Notify users about the turf condition change
-    const recentBookings = await Booking.find({ turf: turf._id }).distinct('user');
-    recentBookings.forEach(userId => {
-      createNotification(
-        userId, 
-        `The condition of ${turf.name} has been updated to: ${condition}`, 
-        'info'
-      );
-    });
-
-    res.status(200).json({ success: true, message: 'Condition updated and notifications sent', data: { condition: turf.condition } });
+    res.status(200).json({ success: true, message: 'Condition updated', data: { condition: turf.condition } });
   } catch (error) { next(error); }
 };

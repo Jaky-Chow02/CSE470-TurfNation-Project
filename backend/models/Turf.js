@@ -70,9 +70,13 @@ const turfSchema = new mongoose.Schema({
       default: 0
     }
   },
+  isApproved: {
+    type: Boolean,
+    default: false
+  },
   isActive: {
     type: Boolean,
-    default: true
+    default: false
   },
   announcements: [{
     message: String,

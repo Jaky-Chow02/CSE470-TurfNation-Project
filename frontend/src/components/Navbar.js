@@ -30,34 +30,38 @@ function Navbar() {
           <Link to="/turfs" className="nav-link">Turfs</Link>
           <Link to="/tournaments" className="nav-link">Tournaments</Link>
 
-          {/* Role-Based Dashboards */}
+          {/* 1. TURF OWNER LINKS */}
           {token && userRole === 'turf_owner' && (
-            <Link to="/owner-dashboard" className="nav-link">Owner Dashboard</Link>
+            <>
+              <Link to="/register-turf" className="nav-link nav-highlight">Register Turf</Link>
+              <Link to="/owner-dashboard" className="nav-link">Owner Dashboard</Link>
+            </>
           )}
 
+          {/* 2. ADMIN LINKS */}
           {token && userRole === 'admin' && (
             <Link to="/admin-dashboard" className="nav-link">Admin Dashboard</Link>
           )}
 
+          {/* 3. REGULAR USER LINKS */}
           {token && userRole !== 'turf_owner' && userRole !== 'admin' && (
-            <Link to="/dashboard" className="nav-link">Dashboard</Link>
+            <>
+              <Link to="/dashboard" className="nav-link">Dashboard</Link>
+              <Link to="/my-bookings" className="nav-link">My Bookings</Link>
+            </>
           )}
 
+          {/* AUTH SECTION */}
           {token ? (
-            <>
-              <Link to="/my-bookings" className="nav-link">My Bookings</Link>
+            <div className="nav-user-section">
+              <NotificationBell />
+              
+              <Link to="/profile" className="nav-link nav-profile">
+                Hello, {userName}
+              </Link>
 
-              {/* User Action Group: Bell + Hello + Logout */}
-              <div className="nav-user-section">
-                <NotificationBell />
-                
-                <Link to="/profile" className="nav-link nav-profile">
-                  Hello, {userName}
-                </Link>
-
-                <button onClick={handleLogout} className="nav-btn">Logout</button>
-              </div>
-            </>
+              <button onClick={handleLogout} className="nav-btn">Logout</button>
+            </div>
           ) : (
             <>
               <Link to="/login" className="nav-link">Login</Link>
