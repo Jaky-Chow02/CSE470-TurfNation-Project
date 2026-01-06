@@ -1,3 +1,4 @@
+// src/App.js
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
@@ -15,9 +16,6 @@ import MyBookings from './pages/MyBookings';
 import UserProfile from './pages/UserProfile';
 import ChangePassword from './pages/ChangePassword';
 
-import Checkout from './pages/Checkout';  // Add this line
-import PaymentSuccess from './pages/PaymentSuccess';  // Add this line
-import PaymentFailed from './pages/PaymentFailed';  // Add this line
 
 import './App.css';
 
@@ -74,10 +72,6 @@ function App() {
               path="/admin-dashboard" 
               element={<ProtectedRoute adminOnly={true}><AdminDashboard /></ProtectedRoute>} 
             />
-            {/* Add Payment Routes */}
-            <Route path="/checkout/:bookingId" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
-            <Route path="/payment-success" element={<PaymentSuccess />} />
-            <Route path="/payment-failed" element={<PaymentFailed />} />
           </Routes>
         </div>
       </div>
