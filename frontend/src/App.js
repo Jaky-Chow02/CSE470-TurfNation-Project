@@ -15,6 +15,22 @@ import BookingPage from './pages/BookingPage';
 import MyBookings from './pages/MyBookings';
 import UserProfile from './pages/UserProfile';
 import ChangePassword from './pages/ChangePassword';
+// frontend/src/App.js
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import SearchPage from './pages/SearchPage';
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/search" element={<SearchPage />} />
+        <Route path="/turf/:id" element={<TurfDetailsPage />} />
+        {/* Other routes */}
+      </Routes>
+    </Router>
+  );
+}
 
 
 import './App.css';

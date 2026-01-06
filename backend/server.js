@@ -5,6 +5,8 @@ const morgan = require('morgan');
 const connectDB = require('./config/database');
 const errorHandler = require('./middleware/errorHandler');
 const userRoutes = require('./routes/userRoutes');
+const searchRoutes = require('./routes/searchRoutes');
+
 
 // Load environment variables
 dotenv.config();
@@ -64,6 +66,7 @@ app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/users', userRoutes);
 app.use('/api/rewards', require('./routes/rewardsRoutes'));
+app.use('/api/search', searchRoutes);
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({

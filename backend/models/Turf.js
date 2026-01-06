@@ -88,7 +88,18 @@ const turfSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+// backend/models/Turf.js
+// Add text index for better search performance
+turfSchema.index({
+  name: 'text',
+  description: 'text',
+  'location.address': 'text',
+  'location.area': 'text',
+  'location.city': 'text'
+});
 
+// Add 2dsphere index for geospatial queries
+turfSchema.index({ 'location.coordinates': '2dsphere' });
 // Index for location-based searches
 turfSchema.index({ 'location.city': 1, sports: 1 });
 
